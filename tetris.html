@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris - The Money Focus</title>
+    <style>
+        :root {
+            --color-bg: #1e1b4b;
+            --color-text: #ffffff;
+            --color-text-muted: #a5b4fc;
+            --color-primary: #ec4899;
+            --color-secondary: #8b5cf6;
+            --color-accent: #06b6d4;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--color-accent), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-board {
+            width: 300px;
+            height: 600px;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            gap: 1px;
+        }
+
+        .tetromino {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 1rem;
+        }
+
+        button {
+            background-color: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--color-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Tetris</h1>
+        <div id="game-board"></div>
+        <div class="game-info">
+            <p>Score: <span id="score">0</span></p>
+            <button id="start-game">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const scoreElement = document.getElementById('score');
+        const startButton = document.getElementById('start-game');
+
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 20;
+        const COLORS = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+
+        let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+        let currentPiece = null;
+        let currentX = 0;
+        let currentY = 0;
+        let score = 0;
+        let gameInterval;
+
+        const TETROMINOS = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[1, 1, 1], [0, 1, 0]],
+            [[1, 1, 1], [1, 0, 0]],
+            [[1, 1, 1], [0, 0, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]]
+        ];
+
+        function drawBoard() {
+            gameBoard.innerHTML = '';
+            for (let y = 0; y < BOARD_HEIGHT; y++) {
+                for (let x = 0; x < BOARD_WIDTH; x++) {
+                    if (board[y][x]) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('tetromino');
+                        cell.style.backgroundColor = COLORS[board[y][x] - 1];
+                        gameBoard.appendChild(cell);
+                    } else {
+                        gameBoard.appendChild(document.createElement('div'));
+                    }
+                }
+            }
+        }
+
+        function drawPiece() {
+            const piece = TETROMINOS[currentPiece];
+            for (let y = 0; y < piece.length; y++) {
+                for (let x = 0; x < piece[y].length; x++) {
+                    if (piece[y][x]) {
+                        const cell = gameBoard.children[(currentY + y) * BOARD_WIDTH + (currentX + x)];
+                        cell.classList.add('tetromino');
+                        cell.style.backgroundColor = COLORS[currentPiece];
+                    }
+                }
+            }
+        }
+
+        function canMove(pieceX, pieceY, piece) {
+            for (let y = 0; y < piece.length; y++) {
+                for (let x = 0; x < piece[y].length; x++) {
+                    if (piece[y][x]) {
+                        if (pieceY + y >= BOARD_HEIGHT || pieceX + x < 0 || pieceX + x >= BOARD_WIDTH || board[pieceY + y][pieceX + x]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function rotatePiece() {
+            const rotated = currentPiece[0].map((_, i) => currentPiece.map(row => row[i]).reverse());
+            if (canMove(currentX, currentY, rotated)) {
+                currentPiece = rotated;
+            }
+        }
+
+        function moveDown() {
+            if (canMove(currentX, currentY + 1, currentPiece)) {
+                currentY++;
+            } else {
+                placePiece();
+                if (currentY === 0) {
+                    gameOver();
+                } else {
+                    newPiece();
+                }
+            }
+            drawBoard();
+            drawPiece();
+        }
+
+        function moveLeft() {
+            if (canMove(currentX - 1, currentY, currentPiece)) {
+                currentX--;
+                drawBoard();
+                drawPiece();
+            }
+        }
+
+        function moveRight() {
+            if (canMove(currentX + 1, currentY, currentPiece)) {
+                currentX++;
+                drawBoard();
+                drawPiece();
+            }
+        }
+
+        function placePiece() {
+            for (let y = 0; y < currentPiece.length; y++) {
+                for (let x = 0; x < currentPiece[y].length; x++) {
+                    if (currentPiece[y][x]) {
+                        board[currentY + y][currentX + x] = currentPiece[y][x];
+                    }
+                }
+            }
+            clearLines();
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(BOARD_WIDTH).fill(0));
+                    linesCleared++;
+                    y++;
+                }
+            }
+            if (linesCleared > 0) {
+                score += linesCleared * 100;
+                scoreElement.textContent = score;
+            }
+        }
+
+        function newPiece() {
+            currentPiece = TETROMINOS[Math.floor(Math.random() * TETROMINOS.length)];
+            currentX = Math.floor(BOARD_WIDTH / 2) - Math.floor(currentPiece[0].length / 2);
+            currentY = 0;
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            alert('Game Over! Your score: ' + score);
+        }
+
+        function startGame() {
+            board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+            score = 0;
+            scoreElement.textContent = score;
+            newPiece();
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(moveDown, 1000);
+            drawBoard();
+            drawPiece();
+        }
+
+        document.addEventListener('keydown', e => {
+            switch (e.key) {
+                case 'ArrowLeft': moveLeft(); break;
+                case 'ArrowRight': moveRight(); break;
+                case 'ArrowDown': moveDown(); break;
+                case 'ArrowUp': rotatePiece(); break;
+            }
+        });
+
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
+

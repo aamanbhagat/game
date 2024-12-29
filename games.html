@@ -1,0 +1,128 @@
+const games = [
+    {
+        id: 'memory',
+        title: 'Memory Match',
+        description: 'Test your memory by matching pairs of cards',
+        color: 'from-pink-500 to-purple-500',
+        icon: '🎯'
+    },
+    {
+        id: 'snake',
+        title: 'Snake Game',
+        description: 'Classic snake game with a modern twist',
+        color: 'from-green-500 to-blue-500',
+        icon: '🐍'
+    },
+    {
+        id: 'tetris',
+        title: 'Tetris',
+        description: 'Arrange falling blocks to clear lines',
+        color: 'from-cyan-500 to-blue-500',
+        icon: '🧱'
+    },
+    {
+        id: 'puzzle',
+        title: 'Sliding Puzzle',
+        description: 'Rearrange tiles to complete the image',
+        color: 'from-yellow-500 to-orange-500',
+        icon: '🧩'
+    },
+    {
+        id: 'whack-a-mole',
+        title: 'Whack-a-Mole',
+        description: 'Test your reflexes by whacking moles',
+        color: 'from-red-500 to-yellow-500',
+        icon: '🔨'
+    },
+    {
+        id: 'tic-tac-toe',
+        title: 'Tic-Tac-Toe',
+        description: 'Classic game of X\'s and O\'s',
+        color: 'from-blue-500 to-indigo-500',
+        icon: '❌⭕'
+    },
+    {
+        id: 'rock-paper-scissors',
+        title: 'Rock Paper Scissors',
+        description: 'Play against the computer in this classic game',
+        color: 'from-green-500 to-teal-500',
+        icon: '✊✋✌️'
+    },
+    {
+        id: 'simon-says',
+        title: 'Simon Says',
+        description: 'Test your memory by repeating color patterns',
+        color: 'from-purple-500 to-pink-500',
+        icon: '🔴🟢🔵🟡'
+    },
+    {
+        id: 'hangman',
+        title: 'Hangman',
+        description: 'Guess the word before the man is hanged',
+        color: 'from-indigo-500 to-purple-500',
+        icon: '🔤'
+    },
+    {
+        id: 'minesweeper',
+        title: 'Minesweeper',
+        description: 'Clear the minefield without hitting any bombs',
+        color: 'from-gray-500 to-gray-700',
+        icon: '💣'
+    },
+    {
+        id: 'math-quiz',
+        title: 'Math Quiz',
+        description: 'Test your math skills with quick calculations',
+        color: 'from-green-500 to-blue-500',
+        icon: '🧮'
+    },
+    {
+        id: 'word-scramble',
+        title: 'Word Scramble',
+        description: 'Unscramble words to test your vocabulary',
+        color: 'from-yellow-500 to-red-500',
+        icon: '🔤'
+    },
+    {
+        id: 'pattern-recognition',
+        title: 'Pattern Recognition',
+        description: 'Identify the next number in the sequence',
+        color: 'from-purple-500 to-indigo-500',
+        icon: '🔢'
+    }
+];
+
+//HTML (example usage)
+const gameGrid = document.getElementById('game-grid');
+games.forEach(game => {
+    const gameElement = document.createElement('div');
+    gameElement.classList.add('game');
+    gameElement.innerHTML = `
+        <div class="game-icon">${game.icon}</div>
+        <h3>${game.title}</h3>
+        <p>${game.description}</p>
+    `;
+    gameElement.style.background = `linear-gradient(${game.color})`;
+    gameGrid.appendChild(gameElement);
+});
+
+
+/* CSS */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.game {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.game-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+

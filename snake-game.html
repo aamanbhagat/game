@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - The Money Focus</title>
+    <style>
+        :root {
+            --color-bg: #1e1b4b;
+            --color-text: #ffffff;
+            --color-text-muted: #a5b4fc;
+            --color-primary: #ec4899;
+            --color-secondary: #8b5cf6;
+            --color-accent: #06b6d4;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--color-secondary), var(--color-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-board {
+            width: 400px;
+            height: 400px;
+            border: 2px solid var(--color-accent);
+            position: relative;
+        }
+
+        .snake-segment {
+            width: 20px;
+            height: 20px;
+            background-color: var(--color-secondary);
+            position: absolute;
+        }
+
+        .food {
+            width: 20px;
+            height: 20px;
+            background-color: var(--color-primary);
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 1rem;
+        }
+
+        button {
+            background-color: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--color-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Snake Game</h1>
+        <div id="game-board"></div>
+        <div class="game-info">
+            <p>Score: <span id="score">0</span></p>
+            <button id="start-game">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const scoreElement = document.getElementById('score');
+        const startButton = document.getElementById('start-game');
+
+        const GRID_SIZE = 20;
+        const GAME_SPEED = 100;
+
+        let snake = [{ x: 10, y: 10 }];
+        let food = { x: 15, y: 15 };
+        let direction = { x: 0, y: 0 };
+        let score = 0;
+        let gameInterval;
+
+        function drawSnake() {
+            gameBoard.innerHTML = '';
+            snake.forEach(segment => {
+                const snakeElement = document.createElement('div');
+                snakeElement.style.left = segment.x * GRID_SIZE + 'px';
+                snakeElement.style.top = segment.y * GRID_SIZE + 'px';
+                snakeElement.classList.add('snake-segment');
+                gameBoard.appendChild(snakeElement);
+            });
+        }
+
+        function drawFood() {
+            const foodElement = document.createElement('div');
+            foodElement.style.left = food.x * GRID_SIZE + 'px';
+            foodElement.style.top = food.y * GRID_SIZE + 'px';
+            foodElement.classList.add('food');
+            gameBoard.appendChild(foodElement);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreElement.textContent = score;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * (gameBoard.clientWidth / GRID_SIZE)),
+                y: Math.floor(Math.random() * (gameBoard.clientHeight / GRID_SIZE))
+            };
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            if (
+                head.x < 0 || head.x >= gameBoard.clientWidth / GRID_SIZE ||
+                head.y < 0 || head.y >= gameBoard.clientHeight / GRID_SIZE ||
+                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                clearInterval(gameInterval);
+                alert('Game Over! Your score: ' + score);
+            }
+        }
+
+        function gameLoop() {
+            moveSnake();
+            checkCollision();
+            drawSnake();
+            drawFood();
+        }
+
+        function startGame() {
+            snake = [{ x: 10, y: 10 }];
+            direction = { x: 0, y: 0 };
+            score = 0;
+            scoreElement.textContent = score;
+            generateFood();
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, GAME_SPEED);
+        }
+
+        document.addEventListener('keydown', e => {
+            switch (e.key) {
+                case 'ArrowUp': if (direction.y === 0) direction = { x: 0, y: -1 }; break;
+                case 'ArrowDown': if (direction.y === 0) direction = { x: 0, y: 1 }; break;
+                case 'ArrowLeft': if (direction.x === 0) direction = { x: -1, y: 0 }; break;
+                case 'ArrowRight': if (direction.x === 0) direction = { x: 1, y: 0 }; break;
+            }
+        });
+
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
+

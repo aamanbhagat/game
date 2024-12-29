@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match - The Money Focus</title>
+    <style>
+        :root {
+            --color-bg: #1e1b4b;
+            --color-text: #ffffff;
+            --color-text-muted: #a5b4fc;
+            --color-primary: #ec4899;
+            --color-secondary: #8b5cf6;
+            --color-accent: #06b6d4;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .memory-card {
+            width: 80px;
+            height: 80px;
+            background-color: var(--color-secondary);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            tabindex="0"; /* Added for keyboard navigation */
+        }
+
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+            background-color: var(--color-primary);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        button {
+            background-color: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--color-secondary);
+        }
+
+        .back-home {
+            background-color: var(--color-secondary);
+            color: var(--color-text);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-left: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-home:hover {
+            background-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Memory Match</h1>
+        <div id="memory-game" class="memory-game"></div>
+        <div class="game-info">
+            <p>Score: <span id="score" aria-live="polite">0</span></p>
+            <button id="reset-game">Reset Game</button>
+            <a href="index.html" class="back-home">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('memory-game');
+        const scoreElement = document.getElementById('score');
+        const resetButton = document.getElementById('reset-game');
+        const emojis = ['🎮', '🎲', '🎯', '🎨', '🎭', '🎪', '🎢', '🎡'];
+        const allEmojis = [...emojis, ...emojis];
+        let cards = [];
+        let flippedCards = [];
+        let score = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createCard(emoji) {
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+            card.dataset.emoji = emoji;
+            card.addEventListener('click', flipCard);
+            card.setAttribute('aria-label', 'Flip card');  //Added aria-label
+            card.addEventListener('keydown', (e) => { //Added keyboard navigation
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
+                }
+            });
+            return card;
+        }
+
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.classList.add('flipped');
+                this.textContent = this.dataset.emoji;
+                flippedCards.push(this);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                score += 1;
+                scoreElement.textContent = score;
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                card1.textContent = '';
+                card2.textContent = '';
+            }
+            flippedCards = [];
+
+            if (score === emojis.length) {
+                alert('Congratulations! You won!');
+            }
+        }
+
+        function initGame() {
+            gameBoard.innerHTML = '';
+            cards = shuffleArray(allEmojis).map(createCard);
+            cards.forEach(card => gameBoard.appendChild(card));
+            score = 0;
+            scoreElement.textContent = score;
+        }
+
+        resetButton.addEventListener('click', initGame);
+        document.querySelectorAll('.memory-card').forEach(card => { //Added keyboard navigation
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
+                }
+            });
+        });
+
+        initGame();
+    </script>
+</body>
+</html>
+
